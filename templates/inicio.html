@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static  %}
+
+
+
+{% block Contenido %}
+
+	
+	<div class="padre">
+		
+		<form method="POST" id="Post_form">
+			
+		{% csrf_token %}
+
+		{{form}}
+
+
+        <div id="resultados">
+            
+        </div>
+
+        <input type="submit" value="Enviar Post" class="boton" name="">
+
+
+		</form>
+
+	</div>
+
+
+    <style>
+        
+
+        .padre{
+            width: 80%;
+            margin: 30px auto;
+        }
+
+        .boton{
+            border:none;
+            padding: 10px;
+            width: 120px;
+            margin: 10px 0;
+            background: #ff9800;
+            cursor: pointer;
+            color: #fff;
+            box-shadow: 3px 3px 3px rgba(0,0,0,.3);
+
+        }
+
+
+        #post-formulario{
+            display: block;
+            width: 500px;
+            height: 100px;
+            padding: 6px 12px;
+            cursor: pointer;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+    </style>
+
+
+  	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+
+
+
+
+    <script>
+        
+
+        $(function(){
+
+
+            $('#Post_form').on('submit', function(event)  {
+
+                event.preventDefault();
+                console.log("Esta funcionando");
+                crear_post();
+
+            })
+
+            function crear_post(){
+
+                console.log("Funcion trabajando")
+
+                $.ajax({
+
+                    url : "CrearPost/",
+                    type : "POST",
+                    data : { post : $('#post-formulario').val()},
+
+                    success : function(json){
+
+                        $('#post-formulario').val('');
+                        console.log(json.texto)
+
+                        $('#resultados').prepend("<li> " + json.texto + "  " + json.usuario + "  " + json.creado + "  </li>" )
+
+                    },
+
+
+                })
+
+
+            }
+
+
+
+          // Esta funcion obtiene un cookie con un nombre de pila
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // ¿Esta cadena de cookies comienza con el nombre que queremos?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+    /*
+    La funcion abajo creará un header con csrf_token
+    */
+
+    function csrfSafeMethod(method) {
+       
+        //Este metodo HTTP no requiere la protecion CSRF  
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function sameOrigin(url) {
+        //  prueba que una URL dada es una URL del mismo origen
+        // url podría ser relativo o esquema relativo o absoluto
+        var host = document.location.host; // host + port
+        var protocol = document.location.protocol;
+        var sr_origin = '//' + host;
+        var origin = protocol + sr_origin;
+        // Permitir URLs absolutas o relativas al mismo origen
+        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+            // o cualquier otra URL que no sea un esquema relativo o absoluto, es decir, relativo.
+            !(/^(\/\/|http:|https:).*/.test(url));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                // Envia el Token al mismo origen,solo URL relativas.
+                // Envíe el token solo si el método garantiza la protección CSRF
+                // Usando el valor CSRFToken adquirido anteriormente
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+
+
+        });
+
+    </script>
+
+{% endblock %}
